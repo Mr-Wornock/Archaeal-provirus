@@ -1,0 +1,41 @@
+in_file <- "OF.csv"
+
+suppressMessages(library(pheatmap))
+suppressMessages(library(RColorBrewer))
+data <- read.table(in_file, header=TRUE, check.names = F, sep = "\t", 
+                   stringsAsFactors = F, quote = "")
+rownames(data) <- data[,1]
+data <- data[,-1]
+# width <- 7.5
+
+# if(ncol(data)>30 && (ncol(data)/4) > width){        ## change it when necessary
+# width <- (ncol(data)/4)
+# }
+
+pdf('heatmap.both_clustered.pdf',onefile=F,width=30,height=30,bg="white")
+
+df <- data/100
+df <- round(df, digits = 2)
+df[df<0.09] <- ""
+pheatmap(data,
+         cluster_rows= T,
+         cluster_cols= T,
+         #scale="row",
+         border_color="grey",
+         fontsize_row =11.4,
+         fontsize_col =11.4,
+         color = colorRampPalette(rev(c("#561139","#104E8B","#8A82CD","#FCFCFC")))(20),
+         clustering_method = "complete",
+         clustering_distance_rows = "correlation",
+         clustering_distance_cols = "correlation",
+		 cellwidth = 12,
+		 cellheight = 12,
+		 display_numbers = as.matrix(df),
+		 fontsize_number = 3.8,
+		 number_color = "black",
+         angle_col=90
+
+)
+dev.off()
+#system("gs -dSAFER -dBATCH -dNOPAUSE -r300 -sDEVICE=pngalpha -sOutputFile=heatmap.both_clustered.png heatmap.both_clustered.pdf")
+

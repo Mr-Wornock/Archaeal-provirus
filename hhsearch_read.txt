@@ -1,0 +1,35 @@
+First, there is a file containing multiple protein sequences, Protein.faa. Since hhsearch cannot directly perform batch annotation, the file needs to be split into individual sequences for annotation, and then the results can be extracted.
+
+1. Spliting the protein file using seqkit
+
+conda activate                                              #Activate the conda environment and prepare to use seqkit
+seqkit split -i -j 32 -O . Protein.faa             
+#mv Protein.faa ../                                       #Backup files can be transferred to the upper-layer directory or deleted. Please do not leave the original file in this folder to prevent comments from interfering
+
+2. Renames the split protein file
+ #After splitting the file using seqkit in the previous step, the result is one file per protein. The name is Protein.part_Accesion_X.faa. Generally, only Accesion_X.faa needs to be retained, so the segmented protein file is renamed
+
+for name in `ls *.faa`;do mv $name ${name#*.};done                        
+for name in `ls *.faa`;do mv $name ${name#*_};done                       
+
+3. Running the batch annotation script under the current folder
+
+chmod u+x hhpred_batch_annotation.sh                                           
+conda activate hhsuite                                                                         
+nohup ./hhpred_batch_annotation.sh &                                            
+
+4. Extracting results
+
+conda activate                                                                                  
+python HHsearch_HHRresult_Extration.py                                       
+
+
+
+Notion:
+The script is run based on the software hhsuite installed in the server, and the core commands are as follows:
+
+hhsearch -i $prot_name -d /home/Public/software/hhsuite/hhsuite_db/pdb_70/pdb70 -d /home/Public/software/hhsuite/hhsuite_db/pdb_30/pdb30 -d /home/Public/software/hhsuite/hhsuite_db/COG_KOG/COG_KOG /home/Public/software/hhsuite/hhsuite_db/pfam/pfam -e 0.001 -o $prot_name.hhr -blasttab $prot_name.blastout -hide_cons -hide_pred -hide_dssp -p 85 -E 1e-3 -Z 20 -z 1 -ssm 2 -sc 1 -seq 1 -loc -dbstrlen 10000 -norealign -maxres 32000 -contxt /home/Public/software/hhsuite/hh-suite/data/context_data.crf
+
+As you can see, the database chose four structural protein database, PDB30, PDB70, COG_KOG, pfam, if want to replace, please in the server directory/home/Public/software/hhsuite hhsuite_db looking for
+For other parameters, please refer to hhsearch-h. If you want to modify, you can directly modify/delete/add in this line command of the script, the selection of some parameters refer to the hhpred web version of the parameters
+
